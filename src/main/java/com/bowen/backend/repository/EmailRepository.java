@@ -14,7 +14,7 @@ public class EmailRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public int insertEmailAddress(int patientId, Email email) {
+    public boolean insertEmailAddress(int patientId, Email email) {
         // set old email to expired
         retireEmail(patientId);
 
@@ -26,7 +26,7 @@ public class EmailRepository {
                 .param("email", email.getEmail().trim())
                 .update();
         log.info("Inserted row {patient_id: {}, email: {}}", patientId, email);
-        return count;
+        return count>0;
     }
 
     private void retireEmail(int patientId) {

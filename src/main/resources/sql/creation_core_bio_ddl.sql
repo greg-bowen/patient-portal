@@ -32,9 +32,9 @@ EXECUTE PROCEDURE core_bio.pronouns_biu();
 
 insert into core_bio.pronouns(name)
 values('N/A'),
-       ('He/Him'),
-       ('She/Her'),
-       ('They/Them');
+      ('He/Him'),
+      ('She/Her'),
+      ('They/Them');
 
 -----------------------------------------------------------------
 --  GENDERS
@@ -42,8 +42,8 @@ drop table if exists core_bio.genders;
 create table core_bio.genders(
                                  id          varchar(2) primary key,
                                  name        varchar(255),
-                                 inserted_at timestamp not null default now(),
-                                 updated_at  timestamp not null default now()
+                                 inserted_at timestamp without time zone not null default now(),
+                                 updated_at  timestamp without time zone not null default now()
 );
 
 CREATE OR REPLACE FUNCTION core_bio.genders_biu()
@@ -80,10 +80,12 @@ CREATE TABLE core_bio.patients (patient_id SERIAL PRIMARY KEY,
                                 dob DATE,
                                 gender varchar(2) references core_bio.genders(id),
                                 pronouns int references core_bio.pronouns(id),
+                                strip_id varchar(255),
+                                last_login timestamp without time zone,
                                 created_by varchar(20) not null,
-                                created_date timestamp not null,
+                                created_date timestamp without time zone not null,
                                 updated_by varchar(20) not null,
-                                updated_date timestamp not null
+                                updated_date timestamp without time zone not null
 );
 
 CREATE OR REPLACE FUNCTION core_bio.patients_biu()
@@ -126,8 +128,8 @@ CREATE TABLE if not exists core_bio.phone (id SERIAL,
                                            seq_id int,
                                            phone_number VARCHAR(12),
                                            type char references core_bio.phone_type(code),
-                                           effective_date timestamp not null default now(),
-                                           expiration_date timestamp,
+                                           effective_date timestamp without time zone not null default now(),
+                                           expiration_date timestamp without time zone,
                                            primary key (patient_id, seq_id)
 );
 
@@ -184,8 +186,8 @@ CREATE TABLE if not exists core_bio.email (id SERIAL,
                                            patient_id INTEGER REFERENCES core_bio.patients(patient_id),
                                            seq_id int,
                                            email VARCHAR(120),
-                                           effective_date timestamp not null,
-                                           expiration_date timestamp,
+                                           effective_date timestamp without time zone not null,
+                                           expiration_date timestamp without time zone,
                                            primary key (patient_id, seq_id)
 );
 
@@ -235,12 +237,12 @@ CREATE TABLE if not exists core_bio.address (id SERIAL,
                                              state VARCHAR(255) not null ,
                                              zip VARCHAR(255) not null ,
                                              type char references core_bio.address_type(code),
-                                             effective_date timestamp not null,
-                                             expiration_date timestamp,
+                                             effective_date timestamp without time zone not null,
+                                             expiration_date timestamp without time zone,
                                              created_by varchar(20) not null,
-                                             created_date timestamp not null,
+                                             created_date timestamp without time zone not null,
                                              updated_by varchar(20) not null,
-                                             updated_date timestamp not null,
+                                             updated_date timestamp without time zone not null,
                                              primary key (patient_id, seq_id)
 );
 

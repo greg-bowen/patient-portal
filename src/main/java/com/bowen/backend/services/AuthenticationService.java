@@ -3,6 +3,7 @@ package com.bowen.backend.services;
 
 import com.bowen.backend.model.PasswordRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import static org.springframework.util.StringUtils.hasText;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -32,7 +34,7 @@ public class AuthenticationService {
                                 response.put("valid", true);
                                 response.put("message", "Password is correct");
                             } else {
-                                response.put("valid", true);
+                                response.put("valid", false);
                                 response.put("message", "Password is incorrect");
                             }
                         },
@@ -75,5 +77,31 @@ public class AuthenticationService {
 
     private String hashPassword(String plainPassword) {
         return new BCryptPasswordEncoder().encode(plainPassword);
+    }
+
+    public JSONObject resetPassword(PasswordRequest request) {
+        try {
+            jdbcClient.sql("SELECT hashed_password " +
+                            "FROM public.users " +
+                            "WHERE email = ?")
+                    .param(request.getEmail().toLowerCase())
+                    .query(String.class)
+                    .stream()
+                    .findFirst()
+                    .ifPresentOrElse(password -> {// user found in db
+                                // TODO - send email with reset link
+                                log.info("User found for email reset: {}", request.getEmail());
+                            },
+                            () -> {// user not found in db
+                                log.info("User not found for email reset: {}", request.getEmail());
+                            });
+        } catch (Exception e) {
+            return new JSONObject()
+                    .put("valid", false)
+                    .put("message", "An error occurred while resetting password");
+        }
+        return new JSONObject()
+                .put("valid", true)
+                .put("message", "If an account exists for this email, a password reset link has been sent.");
     }
 }
