@@ -9,6 +9,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
@@ -90,7 +92,12 @@ public class AuthenticationService {
                     .findFirst()
                     .ifPresentOrElse(password -> {// user found in db
                                 // TODO - send email with reset link
+                                // TODO - save token
+                                //   BONUS - if threshold is not reached
                                 log.info("User found for email reset: {}", request.getEmail());
+                                String token = UUID.randomUUID().toString();
+                                // save the token
+
                             },
                             () -> {// user not found in db
                                 log.info("User not found for email reset: {}", request.getEmail());
@@ -103,5 +110,14 @@ public class AuthenticationService {
         return new JSONObject()
                 .put("valid", true)
                 .put("message", "If an account exists for this email, a password reset link has been sent.");
+    }
+
+    public JSONObject confirmPassword(PasswordRequest request) {
+
+
+
+        return new JSONObject()
+                .put("valid", true)
+                .put("message", "Password reset successfully");
     }
 }

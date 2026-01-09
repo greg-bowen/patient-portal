@@ -31,9 +31,16 @@ public class AuthenticationController {
         return ResponseEntity.ok(response.toString());
     }
 
-    @PostMapping(value = "/reset-password", consumes = "application/json")
-    public ResponseEntity<String> resetPassword(@RequestBody PasswordRequest request) {
+    @PostMapping(value = "/reset-password/request", consumes = "application/json")
+    public ResponseEntity<String> requestPasswordRequest(@RequestBody PasswordRequest request) {
         JSONObject response = authService.resetPassword(request);
+
+        return ResponseEntity.ok(response.toString());
+    }
+
+    @PostMapping(value = "/reset-password/confirm", consumes = "application/json")
+    public ResponseEntity<String> confirmPasswordRequest(@RequestBody PasswordRequest request) {
+        JSONObject response = authService.confirmPassword(request);
 
         return ResponseEntity.ok(response.toString());
     }
