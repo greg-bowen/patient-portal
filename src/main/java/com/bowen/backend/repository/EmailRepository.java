@@ -18,7 +18,7 @@ public class EmailRepository {
         // set old email to expired
         retireEmail(patientId);
 
-        String sql = "insert into biomgr_owner.email(patient_id, email) " +
+        String sql = "insert into core_bio.email(patient_id, email) " +
                 "values (:patientId, :email)";
 
         int count = jdbcClient.sql(sql)
@@ -30,7 +30,7 @@ public class EmailRepository {
     }
 
     private void retireEmail(int patientId) {
-        String sql = "update biomgr_owner.email " +
+        String sql = "update core_bio.email " +
                 "set expiration_date = current_timestamp " +
                 "where patient_id = ? " +
                 "and expiration_date is null";
@@ -42,7 +42,7 @@ public class EmailRepository {
 
     public Email getEmail(int patientId) {
         String sql = "select * " +
-                "from biomgr_owner.email " +
+                "from core_bio.email " +
                 "where patient_id = ? " +
                 "and expiration_date is null " +
                 "order by seq_id desc " +

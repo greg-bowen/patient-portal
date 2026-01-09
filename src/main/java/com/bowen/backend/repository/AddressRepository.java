@@ -17,10 +17,13 @@ public class AddressRepository {
     }
 
     public void insertAddress(int patientId, Address address) {
+
+
     }
 
     public Address getAddresses(int patientId) {
-        String sql = "select * from biomgr_owner.address " +
+        String sql = "select * " +
+                "from core_bio.address " +
                 "where patient_id = :patientId " +
                 "and expiration_date is null " +
                 "order by seq_id desc " +

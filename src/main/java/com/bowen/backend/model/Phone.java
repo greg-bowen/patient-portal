@@ -5,5 +5,9 @@ import lombok.Data;
 @Data
 public class Phone {
     private String phoneNumber;
-    private String type;
+    private Type type;
+
+    public enum Type {
+        HOME, MOBILE, WORK
+    }
 }

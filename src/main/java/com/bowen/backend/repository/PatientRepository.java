@@ -16,7 +16,7 @@ public class PatientRepository {
     }
 
     public Patient getPatientInfo(int patientId) {
-        String sql = "select * from biomgr_owner.patients " +
+        String sql = "select * from core_bio.patients " +
                 "where patient_id = :patientId " +
                 "limit 1";
         try {

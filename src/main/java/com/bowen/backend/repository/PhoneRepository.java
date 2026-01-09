@@ -17,9 +17,9 @@ public class PhoneRepository {
 
     public int insertPhone(int patientId, Phone phone) {
         // set old phone to expired
-        retirePhone(patientId, phone.getType());
+        retirePhone(patientId, phone.getType().name());
 
-        String sql = "insert into biomgr_owner.phone(patient_id, phone_number, type) " +
+        String sql = "insert into core_bio.phone(patient_id, phone_number, type) " +
                 "values (:patientId, :phone, :type)";
 
         int count = jdbcClient.sql(sql)
@@ -32,7 +32,7 @@ public class PhoneRepository {
     }
 
     private void retirePhone(int patientId, String type) {
-        String sql = "update biomgr_owner.phone " +
+        String sql = "update core_bio.phone " +
                 "set expiration_date = current_timestamp " +
                 "where patient_id = ? " +
                 "and type = ? " +
@@ -46,7 +46,7 @@ public class PhoneRepository {
 
     public Phone getPhone(int patientId) {
         String sql = "select * " +
-                "from biomgr_owner.phone " +
+                "from core_bio.phone " +
                 "where patient_id = ? " +
                 "and expiration_date is null " +
                 "order by seq_id desc " +

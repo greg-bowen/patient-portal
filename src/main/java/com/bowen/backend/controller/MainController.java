@@ -29,12 +29,6 @@ public class MainController {
         return patient;
     }
 
-    @PostMapping(value = "/get/transactions", consumes = "application/json", produces = "application/json")
-    public Transactions getTransactions(@RequestBody Request request) {
-        log.info( "Request: {}", request);
-        return entityService.getTransactions(request);
-    }
-
     @PostMapping(value = "/insert/phone", consumes = "application/json", produces = "application/json")
     public String insertPhone(@RequestBody Request request) {
         entityService.insertPhone(request.getPatientId(), request.getPhone());
