@@ -1,0 +1,77 @@
+name: Dev - Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      run_sonar:
+        description: 'Run SonarQube analysis'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  SERVICE_NAME: patient-portal
+  AWS_DEFAULT_REGION: us-east-1
+  ENVIRONMENT: dev
+  ECR_REGISTRY_REPO: 560668774271.dkr.ecr.us-east-1.amazonaws.com/patient-portal/backend-dev
+
+jobs:
+  build-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+          aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+          aws-region: '${{ env.AWS_DEFAULT_REGION }}'
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Checkout
+        uses: actions/checkout@v3.5.2
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: sonar
+        if: ${{ inputs.run_sonar }}
+        env:
+          SONAR_TOKEN: '${{ secrets.SONAR_TOKEN }}'
+          SONAR_HOST_URL: '${{ vars.SONAR_HOST_URL }}'
+        run: |
+          mvn clean install sonar:sonar -Dsonar.projectKey=${{ env.SERVICE_NAME }} -Dsonar.projectName=${{ env.SERVICE_NAME }}
+
+      - name: Build and Push Docker Image
+        id: build-image
+        env:
+          IMAGE_TAG: 'build-${{ github.run_number }}'
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY_REPO }}:$IMAGE_TAG .
+          docker push ${{ env.ECR_REGISTRY_REPO }}:$IMAGE_TAG
+          echo "image=${{ env.ECR_REGISTRY_REPO }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Update ECS Task Definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: 'infra/${{ env.SERVICE_NAME }}-${{ env.ENVIRONMENT }}-task-def.json'
+          container-name: ${{ env.SERVICE_NAME }}-${{ env.ENVIRONMENT }}-container
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy ECS Task
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: '${{ steps.task-def.outputs.task-definition }}'
+          service: '${{ env.SERVICE_NAME }}-${{ env.ENVIRONMENT }}-service'
+          cluster: 'mc-${{ env.ENVIRONMENT }}-cluster'
+          wait-for-service-stability: true

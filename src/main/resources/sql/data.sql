@@ -12,10 +12,16 @@ values (1, '800-600-6014', 'H'),
 
 insert into core_bio.address(patient_id, address_line_1, city, state, zip, type)
 values (1, '123 Main St', 'New York', 'NY', '10001', 'H'),
-       (2, '456 Main St', 'New York', 'NY', '10001', 'H');
+       (2, '456 Main St', 'New York', 'NY', '10001', 'H'),
+       (2, '1234 Cheery St', 'New York', 'NY', '10001', 'H');
 
 insert into core_bio.email (patient_id, email)
-values (1, 'john.doe@example.com'),
+values (1, 'gbowen@mindful.care'),
+       (2, 'david.smith@example.com');
+
+
+insert into core_bio.passwords(patient_id, hashed_password)
+values (1, 'gbowen@mindful.care'),
        (2, 'david.smith@example.com');
 
 -- insert into finmgr_owner.transactions (pid, amount, trans_date, trans_code, trans_note)

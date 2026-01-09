@@ -15,8 +15,8 @@ const router = createRouter({
       component: LoginForm
     },
     {
-      path: '/forgot-password',
-      name: 'forgot-password',
+      path: '/reset-password',
+      name: 'reset-password',
       component: ForgotPassword
     }
   ]

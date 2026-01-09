@@ -181,8 +181,8 @@ EXECUTE PROCEDURE core_bio.phone_biu();
 
 -----------------------------------------------------------------
 -- Email
-drop table if exists core_bio.email;
-CREATE TABLE if not exists core_bio.email (id SERIAL,
+drop table if exists core_bio.emails;
+CREATE TABLE if not exists core_bio.emails (id  serial unique,
                                            patient_id INTEGER REFERENCES core_bio.patients(patient_id),
                                            seq_id int,
                                            email VARCHAR(120),
@@ -191,35 +191,37 @@ CREATE TABLE if not exists core_bio.email (id SERIAL,
                                            primary key (patient_id, seq_id)
 );
 
-CREATE OR REPLACE FUNCTION core_bio.email_biu()
+CREATE OR REPLACE FUNCTION core_bio.emails_biu()
     RETURNS trigger AS $$
 BEGIN
-    update core_bio.email
+    update core_bio.emails
     set expiration_date = now()
     where patient_id = NEW.patient_id
       and expiration_date is null;
     if TG_OP = 'INSERT' then
-        NEW.seq_id := (select coalesce(max(seq_id),0) + 1 from core_bio.email where patient_id =NEW.patient_id);
+        NEW.seq_id := (select coalesce(max(seq_id),0) + 1
+                       from core_bio.emails
+                       where patient_id =NEW.patient_id);
         NEW.effective_date := now();
     end if;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE or replace TRIGGER email_biu
-    BEFORE INSERT or UPDATE ON core_bio.email
+CREATE or replace TRIGGER emails_biu
+    BEFORE INSERT or UPDATE ON core_bio.emails
     FOR EACH ROW
-EXECUTE PROCEDURE core_bio.email_biu();
+EXECUTE PROCEDURE core_bio.emails_biu();
 
 
 -----------------------------------------------------------------
 -- Address type
-drop table if exists core_bio.address_type;
-create table if not exists core_bio.address_type (code varchar(4) primary key,
+drop table if exists core_bio.address_types;
+create table if not exists core_bio.address_types (code varchar(4) primary key,
                                                   description varchar(20)
 );
 
-insert into core_bio.address_type (code, description)
+insert into core_bio.address_types (code, description)
 values ('H', 'Home'),
        ('B', 'Billing'),
        ('O', 'Other');
@@ -227,8 +229,8 @@ values ('H', 'Home'),
 
 -----------------------------------------------------------------
 -- Address
-drop table if exists core_bio.address;
-CREATE TABLE if not exists core_bio.address (id SERIAL,
+drop table if exists core_bio.addresses;
+CREATE TABLE if not exists core_bio.addresses (id SERIAL,
                                              patient_id INTEGER REFERENCES core_bio.patients(patient_id),
                                              seq_id int,
                                              address_line_1 VARCHAR(255) not null,
@@ -236,7 +238,7 @@ CREATE TABLE if not exists core_bio.address (id SERIAL,
                                              city VARCHAR(255) not null ,
                                              state VARCHAR(255) not null ,
                                              zip VARCHAR(255) not null ,
-                                             type char references core_bio.address_type(code),
+                                             type char references core_bio.address_types(code),
                                              effective_date timestamp without time zone not null,
                                              expiration_date timestamp without time zone,
                                              created_by varchar(20) not null,
@@ -246,11 +248,11 @@ CREATE TABLE if not exists core_bio.address (id SERIAL,
                                              primary key (patient_id, seq_id)
 );
 
-CREATE OR REPLACE FUNCTION core_bio.address_biu()
+CREATE OR REPLACE FUNCTION core_bio.addresses_biu()
     RETURNS trigger AS $$
 BEGIN
     if TG_OP = 'INSERT' then
-        NEW.seq_id := (select coalesce(max(seq_id),0) + 1 from core_bio.address where patient_id =NEW.patient_id);
+        NEW.seq_id := (select coalesce(max(seq_id),0) + 1 from core_bio.addresses where patient_id =NEW.patient_id);
         NEW.effective_date := now();
         NEW.created_by := current_user;
         NEW.created_date := now();
@@ -262,7 +264,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE or replace TRIGGER address_biu
-    BEFORE INSERT or UPDATE ON core_bio.address
+CREATE or replace TRIGGER addresses_biu
+    BEFORE INSERT or UPDATE ON core_bio.addresses
     FOR EACH ROW
-EXECUTE PROCEDURE core_bio.address_biu();
+EXECUTE PROCEDURE core_bio.addresses_biu();

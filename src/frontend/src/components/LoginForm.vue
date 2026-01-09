@@ -27,8 +27,8 @@
             {{ loading ? 'Signing in...' : 'Sign in' }}
           </button>
           
-          <div class="forgot-password">
-            <a href="/forgot-password" class="forgot-link">Forgot your password?</a>
+          <div class="reset-password">
+            <a href="/reset-password" class="reset-link">Forgot your password?</a>
           </div>
           
           <div v-if="message" :class="messageClass">
@@ -239,18 +239,18 @@ h1 {
   border-radius: 4px;
 }
 
-.forgot-password {
+.reset-password {
   text-align: center;
   margin-bottom: 1rem;
 }
 
-.forgot-link {
+.reset-link {
   color: #3b82f6;
   text-decoration: none;
   font-size: 0.9rem;
 }
 
-.forgot-link:hover {
+.reset-link:hover {
   text-decoration: underline;
 }
 </style>
