@@ -51,13 +51,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getUserIP } from '../utils/ip.js'
 
 const email = ref('gbowen@mindful.care')
 const password = ref('')
 const loading = ref(false)
 const message = ref('')
 const messageClass = ref('')
+const userIP = ref(null)
+
+onMounted(async () => {
+  userIP.value = await getUserIP()
+})
 
 const validateLogin = async () => {
   loading.value = true
@@ -72,6 +78,7 @@ const validateLogin = async () => {
       body: JSON.stringify({
         email: email.value,
         password: password.value,
+        ipAddress: userIP.value,
       }),
     })
     
