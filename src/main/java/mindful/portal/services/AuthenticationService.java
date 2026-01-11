@@ -62,6 +62,7 @@ public class AuthenticationService {
 
 
         JSONObject validatedPassword = validatePassword(request);
+
         if(validatedPassword.getBoolean("valid")) {
             jdbcClient.sql("UPDATE public.users " +
                             "SET hashed_password = ? " +

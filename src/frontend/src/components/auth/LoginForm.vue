@@ -1,12 +1,10 @@
 <template>
   <div class="page-container">
     <div class="left-panel">
-      <div class="reset-container">
+      <div class="login-container">
         <img src="https://cdn.prod.website-files.com/64d91a88e5135a6a82e114d0/65a6933ecfb3491a563e5405_43Mindful_logo_01%201.svg" alt="Logo" class="logo" />
-        <h1>Reset your password</h1>
-        <p>Enter your email address and we'll send you a link to reset your password.</p>
-        
-        <form @submit.prevent="resetPassword" class="reset-form">
+        <h1>Sign in to your account</h1>
+        <form @submit.prevent="validateLogin" class="login-form">
           <div class="form-group">
             <label>Email</label>
             <input
@@ -16,17 +14,33 @@
             />
           </div>
           
-          <button type="submit" :disabled="loading" class="reset-btn">
-            {{ loading ? 'Sending...' : 'Send reset link' }}
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              v-model="password"
+              type="password"
+              required
+            />
+          </div>
+          
+          <button type="submit" :disabled="loading" class="login-btn">
+            {{ loading ? 'Signing in...' : 'Sign in' }}
           </button>
+          
+          <div class="reset-password">
+            <a href="/reset-password" class="reset-link">Forgot your password?</a>
+          </div>
           
           <div v-if="message" :class="messageClass">
             {{ message }}
           </div>
         </form>
         
-        <div class="back-section">
-          <a href="/login" class="back-link">← Back to sign in</a>
+        <div class="signup-section">
+          <span>New to Mindful Care? </span>
+          <a href="http://mindful.care/pre-registration" class="signup-link" target="_blank">
+            Create an account
+          </a>
         </div>
       </div>
     </div>
@@ -38,9 +52,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getUserIP } from '../utils/ip.js'
+import { useRouter } from 'vue-router'
+import { getUserIP } from '../../utils/ip.js'
 
-const email = ref('')
+const router = useRouter()
+const email = ref('gbowen@mindful.care')
+const password = ref('')
 const loading = ref(false)
 const message = ref('')
 const messageClass = ref('')
@@ -50,18 +67,19 @@ onMounted(async () => {
   userIP.value = await getUserIP()
 })
 
-const resetPassword = async () => {
+const validateLogin = async () => {
   loading.value = true
   message.value = ''
   
   try {
-    const response = await fetch('/api/auth/reset-password/request', {
+    const response = await fetch('/api/auth/validate-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         email: email.value,
+        password: password.value,
         ipAddress: userIP.value,
       }),
     })
@@ -69,10 +87,14 @@ const resetPassword = async () => {
     const data = await response.json()
     
     if (response.ok) {
-      message.value = data.message || 'Password reset link sent to your email!'
-      messageClass.value = 'success'
+      if (data.valid) {
+        router.push('/home')
+      } else {
+        message.value = data.message || 'Login failed'
+        messageClass.value = 'error'
+      }
     } else {
-      message.value = data.message || 'Error sending reset link'
+      message.value = data.message || 'Login failed'
       messageClass.value = 'error'
     }
   } catch (error) {
@@ -121,7 +143,7 @@ const resetPassword = async () => {
   object-fit: cover;
 }
 
-.reset-container {
+.login-container {
   width: 100%;
   max-width: 400px;
 }
@@ -136,12 +158,6 @@ h1 {
   font-size: 2rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-
-p {
-  color: #6b7280;
   margin-bottom: 2rem;
   text-align: left;
 }
@@ -174,7 +190,7 @@ p {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.reset-btn {
+.login-btn {
   width: 100%;
   padding: 0.75rem;
   background: #3b82f6;
@@ -188,27 +204,28 @@ p {
   margin-bottom: 1rem;
 }
 
-.reset-btn:hover:not(:disabled) {
+.login-btn:hover:not(:disabled) {
   background: #2563eb;
 }
 
-.reset-btn:disabled {
+.login-btn:disabled {
   background: #9ca3af;
   cursor: not-allowed;
 }
 
-.back-section {
+.signup-section {
   text-align: center;
   margin-top: 2rem;
+  color: #6b7280;
 }
 
-.back-link {
+.signup-link {
   color: #3b82f6;
   text-decoration: none;
   font-weight: 500;
 }
 
-.back-link:hover {
+.signup-link:hover {
   text-decoration: underline;
 }
 
@@ -228,5 +245,20 @@ p {
   padding: 0.5rem;
   background: #fef2f2;
   border-radius: 4px;
+}
+
+.reset-password {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.reset-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.reset-link:hover {
+  text-decoration: underline;
 }
 </style>

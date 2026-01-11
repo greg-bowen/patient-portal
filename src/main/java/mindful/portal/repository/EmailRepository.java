@@ -14,23 +14,23 @@ public class EmailRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public boolean insertEmailAddress(int patientId, Email email) {
+    public boolean insertEmailAddress(int patientId, String email) {
         // set old email to expired
         retireEmail(patientId);
 
-        String sql = "insert into core_bio.email(patient_id, email) " +
+        String sql = "insert into core_bio.emails(patient_id, email) " +
                 "values (:patientId, :email)";
 
         int count = jdbcClient.sql(sql)
                 .param("patientId", patientId)
-                .param("email", email.getEmail().trim())
+                .param("email", email.trim())
                 .update();
         log.info("Inserted row {patient_id: {}, email: {}}", patientId, email);
         return count>0;
     }
 
     private void retireEmail(int patientId) {
-        String sql = "update core_bio.email " +
+        String sql = "update core_bio.emails " +
                 "set expiration_date = current_timestamp " +
                 "where patient_id = ? " +
                 "and expiration_date is null";
@@ -42,7 +42,7 @@ public class EmailRepository {
 
     public Email getEmail(int patientId) {
         String sql = "select * " +
-                "from core_bio.email " +
+                "from core_bio.emails " +
                 "where patient_id = ? " +
                 "and expiration_date is null " +
                 "order by seq_id desc " +

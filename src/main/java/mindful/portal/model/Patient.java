@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class Patient {
@@ -16,7 +17,7 @@ public class Patient {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date dob;
     private String gender;
-    private Address address;
-    private Email email;
-    private Phone phone;
+    private List<Address> address;
+    private String email;
+    private List<Phone> phone;
 }

@@ -1,13 +1,12 @@
 package mindful.portal.services;
 
-import com.bowen.backend.model.*;
-import com.bowen.backend.repository.*;
-import com.mindful.portal.model.*;
-import com.mindful.portal.repository.*;
-import lombok.extern.slf4j.Slf4j;
 import mindful.portal.model.*;
 import mindful.portal.repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -31,7 +30,7 @@ public class EntityService {
         phoneRepository.insertPhone(patientId, phone);
     }
 
-    public void insertEmailAddress(int patientId, Email email) {
+    public void insertEmailAddress(int patientId, String email) {
         emailRepository.insertEmailAddress(patientId, email);
     }
 
@@ -42,12 +41,23 @@ public class EntityService {
     public Patient getPatient(int patientId) {
         Patient patient = patientRepository.getPatientInfo(patientId);
         patient.setAddress(addressRepository.getAddresses(patientId));
-        patient.setEmail(emailRepository.getEmail(patientId));
         patient.setPhone(phoneRepository.getPhone(patientId));
         return patient;
     }
 
     public Transactions getTransactions(Request request) {
-         return new Transactions(transactionRepository.getTransactions(request.getPatientId()));
+        return new Transactions(transactionRepository.getTransactions(request.getPatientId()));
+    }
+
+    public List<Map<String, Object>> getPronouns() {
+        return patientRepository.getPronouns();
+    }
+
+    public List<Map<String, Object>> getGenders() {
+        return patientRepository.getGenders();
+    }
+
+    public List<Map<String, Object>> getPhoneTypes() {
+        return phoneRepository.getPhoneTypes();
     }
 }

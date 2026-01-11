@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @Service
 public class PhoneRepository {
@@ -15,20 +18,19 @@ public class PhoneRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public int insertPhone(int patientId, Phone phone) {
+    public void insertPhone(int patientId, Phone phone) {
         // set old phone to expired
-        retirePhone(patientId, phone.getType().name());
+        retirePhone(patientId, phone.getType());
 
         String sql = "insert into core_bio.phone(patient_id, phone_number, type) " +
                 "values (:patientId, :phone, :type)";
 
-        int count = jdbcClient.sql(sql)
+        jdbcClient.sql(sql)
                 .param("patientId", patientId)
                 .param("phone", phone.getPhoneNumber().replaceAll("[^0-9]", "").trim())
                 .param("type", phone.getType())
                 .update();
         log.info("Inserted row {patient_id: {}, phone: {}, type: {}}", patientId, phone, phone.getType());
-        return count;
     }
 
     private void retirePhone(int patientId, String type) {
@@ -44,15 +46,21 @@ public class PhoneRepository {
         log.info("retired {} row(s) for patient {}", count, patientId);
     }
 
-    public Phone getPhone(int patientId) {
-        String sql = "select * " +
-                "from core_bio.phone " +
-                "where patient_id = ? " +
-                "and expiration_date is null " +
-                "order by seq_id desc " +
-                "limit 1";
-        return jdbcClient.sql(sql)
+    public List<Phone> getPhone(int patientId) {
+        return jdbcClient.sql("select * " +
+                        "from core_bio.phone " +
+                        "where patient_id = ? " +
+                        "and expiration_date is null " +
+                        "order by seq_id desc")
                 .params(patientId)
                 .query(Phone.class)
-                .single();
-    }}
+                .list();
+    }
+
+    public List<Map<String, Object>> getPhoneTypes(){
+        return jdbcClient.sql("select code, description " +
+                        "from core_bio.phone_type ")
+                .query()
+                .listOfRows();
+    }
+}
