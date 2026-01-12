@@ -1,8 +1,6 @@
 package mindful.portal.controller;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mindful.portal.model.Patient;
@@ -16,14 +14,10 @@ import org.springframework.web.bind.annotation.*;
 public class BasicInfoController {
 
     private final EntityService entityService;
-    private final ObjectMapper objectMapper;
 
     @GetMapping(value = "/get-patient")
-    public Patient getPatient(@RequestParam int id) throws JsonProcessingException {
-        log.info("request: get-patient {}", id);
-        Patient patient = entityService.getPatient(id);
-        log.info("response: {}", objectMapper.writeValueAsString(patient));
-        return patient;
+    public Patient getPatient(@RequestParam int id) {
+        return entityService.getPatient(id);
     }
 
     @PatchMapping(value = "/update-personal-info", consumes = "application/json")
@@ -45,5 +39,4 @@ public class BasicInfoController {
     public void updateEmail(@RequestBody Patient request) {
         entityService.saveEmail(request.getEmail());
     }
-
 }

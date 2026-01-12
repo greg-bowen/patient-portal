@@ -5,7 +5,8 @@
             "image": "560668774271.dkr.ecr.us-east-1.amazonaws.com/patient-portal/backend-dev:latest",
             "portMappings": [{"containerPort": 8080, "protocol": "tcp", "hostPort": 8080}],
             "essential": true,
-            "entryPoint": ["java", "-jar", "app.jar", "--spring.profiles.active=dev"],
+            "environment": [{"name": "SPRING_PROFILES_ACTIVE", "value": "dev"}
+            ],
             "logConfiguration": {
                 "logDriver": "splunk",
                 "secretOptions": [
