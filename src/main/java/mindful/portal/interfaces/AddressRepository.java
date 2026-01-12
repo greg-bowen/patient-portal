@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface AddressRepository extends JpaRepository<Address, Integer> {
 
-    Optional<List<Address>> findByPatientId(long patientId);
+    Optional<Address> findByPatientIdAndExpirationDateIsNull(long patientId);
 }

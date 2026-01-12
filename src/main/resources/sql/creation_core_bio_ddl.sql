@@ -95,7 +95,6 @@ BEGIN
         NEW.created_by := current_user;
         NEW.created_date := now();
     end if;
-    NEW.gender = upper(NEW.gender);
     NEW.updated_by := current_user;
     NEW.updated_date := now();
     RETURN NEW;
@@ -146,7 +145,7 @@ BEGIN
         update core_bio.phone
         set expiration_date = now()
         where patient_id = NEW.patient_id
-          and type = NEW.type
+--           and type = NEW.type
           and expiration_date is null;
         -- get count of updated
         GET DIAGNOSTICS row_count = ROW_COUNT;
@@ -175,7 +174,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE or replace TRIGGER phone_biu
-    BEFORE INSERT or UPDATE ON core_bio.phone
+    BEFORE INSERT ON core_bio.phone
     FOR EACH ROW
 EXECUTE PROCEDURE core_bio.phone_biu();
 
@@ -186,7 +185,7 @@ drop table if exists core_bio.emails;
 CREATE TABLE if not exists core_bio.emails (id  BIGSERIAL unique,
                                            patient_id BIGINT REFERENCES core_bio.patients(patient_id),
                                            seq_id int,
-                                           email VARCHAR(120),
+                                           email_address VARCHAR(120),
                                            effective_date timestamp without time zone not null,
                                            expiration_date timestamp without time zone,
                                            primary key (patient_id, seq_id)
@@ -204,13 +203,14 @@ BEGIN
                        from core_bio.emails
                        where patient_id =NEW.patient_id);
         NEW.effective_date := now();
+        NEW.email_address := lower(NEW.email_address);
     end if;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE or replace TRIGGER emails_biu
-    BEFORE INSERT or UPDATE ON core_bio.emails
+    BEFORE INSERT ON core_bio.emails
     FOR EACH ROW
 EXECUTE PROCEDURE core_bio.emails_biu();
 
@@ -252,6 +252,11 @@ CREATE TABLE if not exists core_bio.addresses (id BIGSERIAL,
 CREATE OR REPLACE FUNCTION core_bio.addresses_biu()
     RETURNS trigger AS $$
 BEGIN
+    update core_bio.addresses
+    set expiration_date = now()
+    where patient_id = NEW.patient_id
+      and expiration_date is null;
+
     if TG_OP = 'INSERT' then
         NEW.seq_id := (select coalesce(max(seq_id),0) + 1 from core_bio.addresses where patient_id =NEW.patient_id);
         NEW.effective_date := now();
@@ -266,6 +271,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE or replace TRIGGER addresses_biu
-    BEFORE INSERT or UPDATE ON core_bio.addresses
+    BEFORE INSERT ON core_bio.addresses
     FOR EACH ROW
 EXECUTE PROCEDURE core_bio.addresses_biu();

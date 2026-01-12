@@ -83,7 +83,7 @@
           <h2>Email Address</h2>
           <form @submit.prevent="updateEmail" class="update-form">
             <div class="form-group">
-              <input v-model="editableEmail" type="email" required />
+              <input v-model="editableEmail.emailAddress" type="email" required />
             </div>
             <button type="submit" :disabled="emailLoading || !emailChanged" class="update-btn">
               {{ emailLoading ? 'Updating...' : 'Update Email' }}
@@ -99,14 +99,15 @@
           <h2>Phone Number</h2>
           <form @submit.prevent="updatePhone" class="update-form">
             <div class="form-group">
-              <input v-model="editablePhone" type="tel" required />
+              <input v-model="editablePhone.phoneNumber" type="tel" required />
             </div>
             <div class="checkboxes">
               <label>
                 <input v-model="editablePhone.sms" type="checkbox" />
-                Can SMS
+                Send me SMS messages
               </label>
             </div>
+            <br>
             <button type="submit" :disabled="phoneLoading || !phoneChanged" class="update-btn">
               {{ phoneLoading ? 'Updating...' : 'Update Phone' }}
             </button>
@@ -123,21 +124,25 @@
         <h2>Address</h2>
         <form @submit.prevent="updateAddress" class="update-form">
           <div class="form-group">
-            <label>Street Address</label>
-            <input v-model="address.addressLine1" type="text" required />
+            <label>Address Line 1</label>
+            <input v-model="editableAddress.addressLine1" type="text" required />
+          </div>
+          <div class="form-group">
+            <label>Address Line 2</label>
+            <input v-model="editableAddress.addressLine2" type="text"/>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label>City</label>
-              <input v-model="address.city" type="text" required />
+              <input v-model="editableAddress.city" type="text" required />
             </div>
             <div class="form-group">
               <label>State</label>
-              <input v-model="address.state" type="text" required />
+              <input v-model="editableAddress.state" type="text" required />
             </div>
             <div class="form-group">
               <label>ZIP Code</label>
-              <input v-model="address.zip" type="text" required />
+              <input v-model="editableAddress.zip" type="text" required />
             </div>
           </div>
           <button type="submit" :disabled="addressLoading || !addressChanged" class="update-btn">
@@ -202,17 +207,45 @@ const loadGenders = async () => {
   }
 }
 
+///////////////////////////////////
+// Phone Types
+// const phoneTypes = ref([])
+// const phoneTypesLoading = ref(false)
+// const phoneTypesError = ref('')
+//
+// const loadPhoneTypes = async () => {
+//   phoneTypesLoading.value = true
+//   phoneTypesError.value = ''
+//   try {
+//     const response = await fetch('/api/get-phone-types')
+//     if (response.ok) {
+//       phoneTypes.value = await response.json()
+//     }
+//   } catch (err) {
+//     phoneTypesError.value = 'Unable to load phone types'
+//     console.error(err)
+//   } finally {
+//     phoneTypesLoading.value = false
+//   }
+// }
+
 /////////////////////////////////
 // Profile
 const profile = ref({
-  email: '',
-  phone: '',
+  email: {
+    emailAddress: ''
+  },
+  phone: {
+    phoneNumber: '',
+    sms: false
+  },
   address: {
     addressLine1: '',
     addressLine2: '',
     city: '',
     state: '',
-    zip: ''
+    zip: '',
+    type: ''
   }
 })
 
@@ -229,13 +262,25 @@ const patientInfo = ref({
 
 const originalPersonalInfo = ref({})
 
-const editablePhone = ref('')
-const editableEmail = ref('')
-const address = ref({
+const editablePhone = ref({
+  patientId: '',
+  phoneNumber: '',
+  sms: false
+})
+
+const editableEmail = ref({
+  patientId: '',
+  emailAddress: ''
+})
+
+const editableAddress = ref({
+  patientId: '',
   addressLine1: '',
+  addressLine2: '',
   city: '',
   state: '',
-  zip: ''
+  zip: '',
+  type: ''
 })
 
 const phoneLoading = ref(false)
@@ -253,24 +298,31 @@ const emailMessageClass = ref('')
 const addressMessageClass = ref('')
 const personalMessageClass = ref('')
 
-const phoneChanged = computed(() => {
-  return editablePhone.value !== profile.value.phone
-})
-const emailChanged = computed(() => editableEmail.value !== profile.value.email)
+const phoneChanged = computed(() =>
+    editablePhone.value.phoneNumber  !== profile.value.phone.phoneNumber
+    || editablePhone.value.sms  !== profile.value.phone.sms)
+const emailChanged = computed(() => editableEmail.value.emailAddress !== profile.value.email.emailAddress)
 
 const addressChanged = computed(() => {
   const orig = profile.value.address
-  const edit = address.value
-  return orig.addressLine1 !== edit.addressLine1 || orig.city !== edit.city || orig.state !== edit.state || orig.zip !== edit.zip
+  const edit = editableAddress.value
+  return orig.addressLine1 !== edit.addressLine1
+      || orig.addressLine2 !== edit.addressLine2
+      || orig.city !== edit.city
+      || orig.state !== edit.state
+      || orig.zip !== edit.zip
 })
-
+// determines if there are changes
 const personalInfoChanged = computed(() => {
   const orig = originalPersonalInfo.value
   const edit = patientInfo.value
-  return orig.firstName !== edit.firstName || orig.middleName !== edit.middleName ||
-      orig.lastName !== edit.lastName || orig.preferredName !== edit.preferredName ||
-      orig.pronouns !== edit.pronouns || orig.gender !== edit.gender ||
-      orig.dob !== edit.dob
+  return orig.firstName !== edit.firstName
+      || orig.middleName !== edit.middleName
+      || orig.lastName !== edit.lastName
+      || orig.preferredName !== edit.preferredName
+      || orig.pronouns !== edit.pronouns
+      || orig.gender !== edit.gender
+      || orig.dob !== edit.dob
 })
 
 const loadPatientData = async () => {
@@ -307,16 +359,20 @@ const loadPatientData = async () => {
       originalPersonalInfo.value = { ...patientInfo.value };
 
       // Populate email
-      editableEmail.value = data.email?.email || '';
+      editableEmail.value.emailAddress = data.email?.emailAddress || '';
+      editableEmail.value.patientId = data.patientInfo.patientId || '';
 
       // Populate phone numbers (optional: pick primary or first)
-      editablePhone.value = data.phone?.[0]?.phoneNumber || '';
+      editablePhone.value.patientId = data.patientInfo.patientId || '';
+      editablePhone.value.phoneNumber = data.phone?.phoneNumber || '';
+      editablePhone.value.sms = data.phone?.sms || false;
 
       // Populate address (take first if exists)
-      const addr = data.address?.[0] || {};
-      address.value = {
+      const addr = data.address || {};
+      editableAddress.value = {
+        patientId: data.patientInfo.patientId || '',
         addressLine1: addr.addressLine1 || '',
-        addressLine2: addr.addressLine2 || '',
+        addressLine2: addr.addressLine2 || null,
         city: addr.city || '',
         state: addr.state || '',
         zip: addr.zip || ''
@@ -325,8 +381,8 @@ const loadPatientData = async () => {
       // Update profile reference (raw objects)
       profile.value = {
         email: data.email || {},
-        phone: data.phone || [],
-        address: data.address || []
+        phone: data.phone || {},
+        address: data.address || {}
       };
     }
   } catch (err) {
@@ -350,9 +406,9 @@ onMounted(() => {
   }
 
   originalPersonalInfo.value = { ...patientInfo.value }
-  editablePhone.value = profile.value.phone
-  editableEmail.value = profile.value.email
-  address.value = { ...profile.value.address }
+  editablePhone.value.phoneNumber = profile.value.phone.phoneNumber
+  editableEmail.value.emailAddress = profile.value.email.emailAddress
+  editableAddress.value = { ...profile.value.address }
 })
 
 const updatePersonalInfo = async () => {
@@ -360,15 +416,13 @@ const updatePersonalInfo = async () => {
   personalMessage.value = ''
 
   try {
-    const patientId = new URLSearchParams(window.location.search).get('id');
 
     const response = await fetch('/api/update-personal-info', {
-      method: 'POST',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        patientId: patientId,
         patientInfo: patientInfo.value,
       }),
     })
@@ -400,7 +454,6 @@ const updatePhone = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        patientId: 1,
         phone: editablePhone.value,
       }),
     })
@@ -426,8 +479,8 @@ const updateEmail = async () => {
   emailMessage.value = ''
 
   try {
-    const response = await fetch('/api/insert/email', {
-      method: 'POST',
+    const response = await fetch('/api/update-email', {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -458,19 +511,19 @@ const updateAddress = async () => {
   addressMessage.value = ''
 
   try {
-    const response = await fetch('/api/insert/address', {
-      method: 'POST',
+    const response = await fetch('/api/update-address', {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         patientId: 1,
-        address: address.value,
+        address: editableAddress.value,
       }),
     })
 
     if (response.ok) {
-      profile.value.address = { ...address.value }
+      profile.value.address = { ...editableAddress.value }
       addressMessage.value = 'Address updated successfully!'
       addressMessageClass.value = 'success'
     } else {

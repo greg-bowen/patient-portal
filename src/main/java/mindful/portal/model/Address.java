@@ -24,6 +24,6 @@ public class Address {
     private String state;
     private String zip;
     private Character type;
-    private LocalDateTime effective_date;
-    private LocalDateTime expiration_date;
+    private LocalDateTime effectiveDate;
+    private LocalDateTime expirationDate;
 }

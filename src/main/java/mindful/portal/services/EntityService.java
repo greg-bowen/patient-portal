@@ -33,16 +33,15 @@ public class EntityService {
         PatientInfo info = patientInfoRepository.findByPatientId(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
 
-        Email email = emailRepo.findByPatientId(patientId).orElse(null);
-
-        List<Address> addresses = addressRepo.findByPatientId(patientId).orElse(null);
-        List<Phone> phones = phoneRepo.findByPatientId(patientId).orElse(null);;
+        Email email = emailRepo.findByPatientIdAndExpirationDateIsNull(patientId).orElse(null);
+        Address address = addressRepo.findByPatientIdAndExpirationDateIsNull(patientId).orElse(null);
+        Phone phone = phoneRepo.findByPatientIdAndExpirationDateIsNull(patientId).orElse(null);
 
         Patient patient = new Patient();
         patient.setPatientInfo(info);
         patient.setEmail(email);
-        patient.setAddress(addresses);
-        patient.setPhone(phones);
+        patient.setAddress(address);
+        patient.setPhone(phone);
 
         return patient;
     }
@@ -50,7 +49,6 @@ public class EntityService {
     public void savePatient(PatientInfo patient) {
         patientInfoRepository.save(patient);
     }
-
 
     public List<Map<String, Object>> getPronouns() {
         return getters.getPronouns();
@@ -62,5 +60,17 @@ public class EntityService {
 
     public List<Map<String, Object>> getPhoneTypes() {
         return phoneRepositoryOld.getPhoneTypes();
+    }
+
+    public void savePhone(Phone phone) {
+        phoneRepo.save(phone);
+    }
+
+    public void saveAddress(Address address) {
+        addressRepo.save(address);
+    }
+
+    public void saveEmail(Email email) {
+        emailRepo.save(email);
     }
 }

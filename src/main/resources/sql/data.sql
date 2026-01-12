@@ -13,6 +13,6 @@ values (1, '123 1rst St', 'New York', 'NY', '10001', 'H'),
        (2, '456 Main St', 'New York', 'NY', '10001', 'H'),
        (2, '1234 Cheery St', 'New York', 'NY', '10001', 'H');
 
-insert into core_bio.emails (patient_id, email)
+insert into core_bio.emails (patient_id, email_address)
 values (1, 'gbowen@mindful.care'),
        (2, 'david.smith@example.com');
