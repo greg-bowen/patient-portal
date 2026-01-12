@@ -16,7 +16,7 @@ env:
   SERVICE_NAME: patient-portal
   AWS_DEFAULT_REGION: us-east-1
   ENVIRONMENT: dev
-  ECR_REGISTRY_REPO: 560668774271.dkr.ecr.us-east-1.amazonaws.com/patient-portal/backend-dev
+  ECR_REGISTRY: 560668774271.dkr.ecr.us-east-1.amazonaws.com
 
 jobs:
   build-deploy:
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.5.2
 
-      - name: Set up JDK 21
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -51,27 +51,49 @@ jobs:
         run: |
           mvn clean install sonar:sonar -Dsonar.projectKey=${{ env.SERVICE_NAME }} -Dsonar.projectName=${{ env.SERVICE_NAME }}
 
-      - name: Build and Push Docker Image
-        id: build-image
+      # Backend Build
+      - name: Build and push Docker - Backend
+        id: build-image-backend
         env:
           IMAGE_TAG: 'build-${{ github.run_number }}'
         run: |
-          docker build -t ${{ env.ECR_REGISTRY_REPO }}:$IMAGE_TAG .
-          docker push ${{ env.ECR_REGISTRY_REPO }}:$IMAGE_TAG
-          echo "image=${{ env.ECR_REGISTRY_REPO }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.SERVICE_NAME }}/backend-${{ env.ENVIRONMENT }}:$IMAGE_TAG .
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.SERVICE_NAME }}/backend-${{ env.ENVIRONMENT }}:$IMAGE_TAG
+          echo "image=${{ env.ECR_REGISTRY }}/${{ env.SERVICE_NAME }}/backend-${{ env.ENVIRONMENT }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Update ECS Task Definition
-        id: task-def
+      # Frontend Build
+      - name: Build and push Docker - Frontend
+        id: build-image-frontend
+        env:
+          IMAGE_TAG: 'build-${{ github.run_number }}'
+        run: |
+          docker build -f src/frontend/Dockerfile-frontend -t ${{ env.ECR_REGISTRY }}/${{ env.SERVICE_NAME }}/frontend-${{ env.ENVIRONMENT }}:$IMAGE_TAG ./src/frontend
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.SERVICE_NAME }}/frontend-${{ env.ENVIRONMENT }}:$IMAGE_TAG
+          echo "image=${{ env.ECR_REGISTRY }}/${{ env.SERVICE_NAME }}/frontend-${{ env.ENVIRONMENT }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      # Update backend image
+      - name: Update Task Definition - Backend
+        id: task-def-backend
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: 'infra/${{ env.SERVICE_NAME }}-${{ env.ENVIRONMENT }}-task-def.json'
-          container-name: ${{ env.SERVICE_NAME }}-${{ env.ENVIRONMENT }}-container
-          image: ${{ steps.build-image.outputs.image }}
+          container-name: backend-service
+          image: ${{ steps.build-image-backend.outputs.image }}
 
+      # Update frontend image using the rendered backend task definition
+      - name: Update Task Definition - Frontend
+        id: task-def-frontend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-backend.outputs.task-definition }}
+          container-name: frontend-service
+          image: ${{ steps.build-image-frontend.outputs.image }}
+
+      # Deploy
       - name: Deploy ECS Task
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: '${{ steps.task-def.outputs.task-definition }}'
+          task-definition: '${{ steps.task-def-frontend.outputs.task-definition }}'
           service: '${{ env.SERVICE_NAME }}-${{ env.ENVIRONMENT }}-service'
           cluster: 'mc-${{ env.ENVIRONMENT }}-cluster'
           wait-for-service-stability: true

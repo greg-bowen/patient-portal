@@ -1,29 +1,50 @@
 {
-    "containerDefinitions": [{
-        "name": "patient-portal-backend-dev-container",
-        "image": "560668774271.dkr.ecr.us-east-1.amazonaws.com/patient-portal/backend-dev:latest",
-        "portMappings": [{"containerPort": 8080, "protocol": "tcp", "hostPort": 8080}],
-        "essential": true,
-        "entryPoint": ["java", "-jar", "app.jar", "--spring.profiles.active=dev"],
-        "logConfiguration": {
-            "logDriver": "splunk",
-            "secretOptions": [
-                {"valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/splunk/token", "name": "splunk-token"},
-                {"valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/splunk/url", "name": "splunk-url"}
-            ],
-            "options": {
-                "splunk-insecureskipverify": "true",
-                "splunk-source": "patient-portal-dev-service",
-                "splunk-sourcetype": "mc-dev-cluster",
-                "splunk-format": "raw"
-            }
+    "containerDefinitions": [
+        {
+            "name": "backend-service",
+            "image": "560668774271.dkr.ecr.us-east-1.amazonaws.com/patient-portal/backend-dev:latest",
+            "portMappings": [{"containerPort": 8080, "protocol": "tcp", "hostPort": 8080}],
+            "essential": true,
+            "entryPoint": ["java", "-jar", "app.jar", "--spring.profiles.active=dev"],
+            "logConfiguration": {
+                "logDriver": "splunk",
+                "secretOptions": [
+                    {"valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/splunk/token", "name": "splunk-token"},
+                    {"valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/splunk/url", "name": "splunk-url"}
+                ],
+                "options": {
+                    "splunk-insecureskipverify": "true",
+                    "splunk-source": "patient-portal-dev-service",
+                    "splunk-sourcetype": "mc-dev-cluster",
+                    "splunk-format": "raw"
+                }
+            },
+            "secrets": [
+                {"name": "DB_USER",        "valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/patient-portal/db-user"},
+                {"name": "DB_PASSWORD",    "valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/patient-portal/db-password"},
+                {"name": "DB_HOST",        "valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/patient-portal/db-host"}
+            ]
         },
-        "secrets": [
-            {"name": "DB_USER",        "valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/patient-portal/db-user"},
-            {"name": "DB_PASSWORD",    "valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/patient-portal/db-password"},
-            {"name": "DB_HOST",        "valueFrom": "arn:aws:ssm:us-east-1:560668774271:parameter/dev/patient-portal/db-host"}
-        ]
-    }],
+        {
+            "name": "frontend-service",
+            "image": "560668774271.dkr.ecr.us-east-1.amazonaws.com/patient-portal/frontend-dev:latest",
+            "portMappings": [{"containerPort": 80}],
+            "essential": true,
+            "logConfiguration": {
+                "logDriver": "splunk",
+                "secretOptions": [
+                    {"name": "splunk-token",    "valueFrom":"arn:aws:ssm:us-east-1:560668774271:parameter/dev/splunk/token"},
+                    {"name": "splunk-url",      "valueFrom":"arn:aws:ssm:us-east-1:560668774271:parameter/dev/splunk/url"}
+                ],
+                "options": {
+                    "splunk-insecureskipverify": "true",
+                    "splunk-source": "patient-portal-frontend-dev-service",
+                    "splunk-sourcetype": "mc-dev-cluster",
+                    "splunk-format": "raw"
+                }
+            }
+        }
+    ],
     "family": "patient-portal-dev-task-def",
     "taskRoleArn": "arn:aws:iam::560668774271:role/mc-patient-portal-dev-task-role",
     "executionRoleArn": "arn:aws:iam::560668774271:role/mc-patient-portal-dev-execution-role",
