@@ -1,11 +1,11 @@
 package mindful.portal.model.legacy;
 
 
+import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Type;
-import com.vladmihalcea.hibernate.type.array.IntArrayType;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 

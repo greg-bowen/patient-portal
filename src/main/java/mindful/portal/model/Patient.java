@@ -2,8 +2,6 @@ package mindful.portal.model;
 
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 public class Patient {
     private PatientInfo patientInfo;

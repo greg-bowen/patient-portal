@@ -172,7 +172,7 @@ const loadPronouns = async () => {
   pronounsError.value = ''
 
   try {
-    const response = await fetch('/api/get-pronouns')
+    const response = await fetch('/api/cache/get-pronouns')
 
     if (response.ok) {
       pronouns.value = await response.json()
@@ -195,7 +195,7 @@ const loadGenders = async () => {
   gendersLoading.value = true
   gendersError.value = ''
   try {
-    const response = await fetch('/api/get-genders')
+    const response = await fetch('/api/cache/get-genders')
     if (response.ok) {
       genders.value = await response.json()
     }
@@ -217,7 +217,7 @@ const loadGenders = async () => {
 //   phoneTypesLoading.value = true
 //   phoneTypesError.value = ''
 //   try {
-//     const response = await fetch('/api/get-phone-types')
+//     const response = await fetch('/api/cache/get-phone-types')
 //     if (response.ok) {
 //       phoneTypes.value = await response.json()
 //     }

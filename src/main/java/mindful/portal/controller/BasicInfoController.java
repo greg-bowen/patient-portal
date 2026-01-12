@@ -9,9 +9,6 @@ import mindful.portal.model.Patient;
 import mindful.portal.services.EntityService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
 @Slf4j
 @RestController
 @RequestMapping("/api")
@@ -49,18 +46,4 @@ public class BasicInfoController {
         entityService.saveEmail(request.getEmail());
     }
 
-    @GetMapping(value = "/get-pronouns")
-    public List<Map<String, Object>> getTransactions() {
-        return entityService.getPronouns();
-    }
-
-    @GetMapping(value = "/get-genders")
-    public List<Map<String, Object>> getGenders() {
-        return entityService.getGenders();
-    }
-
-    @GetMapping(value = "/get-phone-types")
-    public List<Map<String, Object>> getPhoneTypes() {
-        return entityService.getPhoneTypes();
-    }
 }
