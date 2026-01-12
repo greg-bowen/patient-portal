@@ -7,6 +7,6 @@ RUN java -version
 RUN mvn -version
 RUN mvn -f /app/pom.xml clean package
 FROM eclipse-temurin:21-jre
-COPY --from=builder /app/target/patient-portal-0.0.1-SNAPSHOT.jar   app.jar
+COPY --from=builder /app/target/patientInfo-portal-0.0.1-SNAPSHOT.jar   app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

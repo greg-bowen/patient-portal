@@ -72,7 +72,7 @@ values ('M','Male'),
 -----------------------------------------------------------------
 --  PATIENTS
 drop table if exists core_bio.patients cascade;
-CREATE TABLE core_bio.patients (patient_id SERIAL PRIMARY KEY,
+CREATE TABLE core_bio.patients (patient_id BIGSERIAL PRIMARY KEY,
                                 preferred_name VARCHAR(255),
                                 first_name VARCHAR(255),
                                 middle_name VARCHAR(255),
@@ -122,12 +122,13 @@ values ('H', 'Home'),
 
 -----------------------------------------------------------------
 -- PHONE
-drop table if exists core_bio.phone;
-CREATE TABLE if not exists core_bio.phone (id SERIAL,
-                                           patient_id INTEGER REFERENCES core_bio.patients(patient_id),
+drop table if eXists core_bio.phone;
+CREATE TABLE if not exists core_bio.phone (id BIGSERIAL,
+                                           patient_id BIGINT REFERENCES core_bio.patients(patient_id),
                                            seq_id int,
                                            phone_number VARCHAR(12),
                                            type char references core_bio.phone_type(code),
+                                           sms boolean default false,
                                            effective_date timestamp without time zone not null default now(),
                                            expiration_date timestamp without time zone,
                                            primary key (patient_id, seq_id)
@@ -182,8 +183,8 @@ EXECUTE PROCEDURE core_bio.phone_biu();
 -----------------------------------------------------------------
 -- Email
 drop table if exists core_bio.emails;
-CREATE TABLE if not exists core_bio.emails (id  serial unique,
-                                           patient_id INTEGER REFERENCES core_bio.patients(patient_id),
+CREATE TABLE if not exists core_bio.emails (id  BIGSERIAL unique,
+                                           patient_id BIGINT REFERENCES core_bio.patients(patient_id),
                                            seq_id int,
                                            email VARCHAR(120),
                                            effective_date timestamp without time zone not null,
@@ -230,8 +231,8 @@ values ('H', 'Home'),
 -----------------------------------------------------------------
 -- Address
 drop table if exists core_bio.addresses;
-CREATE TABLE if not exists core_bio.addresses (id SERIAL,
-                                             patient_id INTEGER REFERENCES core_bio.patients(patient_id),
+CREATE TABLE if not exists core_bio.addresses (id BIGSERIAL,
+                                             patient_id BIGINT REFERENCES core_bio.patients(patient_id),
                                              seq_id int,
                                              address_line_1 VARCHAR(255) not null,
                                              address_line_2 VARCHAR(255),

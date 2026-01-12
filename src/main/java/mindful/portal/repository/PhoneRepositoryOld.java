@@ -1,8 +1,8 @@
 package mindful.portal.repository;
 
 
-import mindful.portal.model.Phone;
 import lombok.extern.slf4j.Slf4j;
+import mindful.portal.model.Phone;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 
@@ -11,16 +11,16 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class PhoneRepository {
+public class PhoneRepositoryOld {
     private final JdbcClient jdbcClient;
 
-    public PhoneRepository(JdbcClient jdbcClient) {
+    public PhoneRepositoryOld(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 
     public void insertPhone(int patientId, Phone phone) {
         // set old phone to expired
-        retirePhone(patientId, phone.getType());
+        retirePhone(patientId, String.valueOf(phone.getType()));
 
         String sql = "insert into core_bio.phone(patient_id, phone_number, type) " +
                 "values (:patientId, :phone, :type)";

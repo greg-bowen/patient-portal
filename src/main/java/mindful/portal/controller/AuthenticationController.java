@@ -1,9 +1,9 @@
 package mindful.portal.controller;
 
-import mindful.portal.model.PasswordRequest;
-import mindful.portal.services.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mindful.portal.model.PasswordRequest;
+import mindful.portal.services.AuthenticationService;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

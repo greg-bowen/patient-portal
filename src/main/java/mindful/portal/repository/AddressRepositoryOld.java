@@ -1,8 +1,8 @@
 package mindful.portal.repository;
 
 
-import mindful.portal.model.Address;
 import lombok.extern.slf4j.Slf4j;
+import mindful.portal.model.Address;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
@@ -11,10 +11,10 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class AddressRepository {
+public class AddressRepositoryOld {
 
     private final JdbcClient jdbcClient;
-    public AddressRepository(JdbcClient jdbcClient) {
+    public AddressRepositoryOld(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 

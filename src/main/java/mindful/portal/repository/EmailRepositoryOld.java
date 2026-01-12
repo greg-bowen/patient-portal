@@ -1,16 +1,16 @@
 package mindful.portal.repository;
 
-import mindful.portal.model.Email;
 import lombok.extern.slf4j.Slf4j;
+import mindful.portal.model.Email;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class EmailRepository {
+public class EmailRepositoryOld {
     private final JdbcClient jdbcClient;
 
-    public EmailRepository(JdbcClient jdbcClient) {
+    public EmailRepositoryOld(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 

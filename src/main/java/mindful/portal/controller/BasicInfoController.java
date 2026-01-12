@@ -1,11 +1,14 @@
 package mindful.portal.controller;
 
 
-import mindful.portal.model.Patient;
-import mindful.portal.model.Request;
-import mindful.portal.services.EntityService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
+import mindful.portal.model.Patient;
+import mindful.portal.model.PatientInfo;
+import mindful.portal.model.Phone;
+import mindful.portal.services.EntityService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,36 +17,31 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class BasicInfoController {
 
     private final EntityService entityService;
+    private final ObjectMapper objectMapper;
 
-    public BasicInfoController(EntityService entityService) {
-        this.entityService = entityService;
-    }
 
     @GetMapping(value = "/get-patient")
-    public Patient getPatient(@RequestParam int id) {
+    public Patient getPatient(@RequestParam int id) throws JsonProcessingException {
         Patient patient = entityService.getPatient(id);
-        log.info("Patient: {}", patient);
+        log.info("response: {}", objectMapper.writeValueAsString(patient));
         return patient;
     }
 
-    @PostMapping(value = "/insert-phone", consumes = "application/json")
-    public String insertPhone(@RequestBody Request request) {
-        entityService.insertPhone(request.getPatientId(), request.getPhone());
+    @PatchMapping(value = "/update-personal-info", consumes = "application/json")
+    public String updatePersonalInfo(@RequestBody Patient request) throws JsonProcessingException {
+        log.info("Request: {}", objectMapper.writeValueAsString(request));
+        entityService.savePatient(request.getPatientInfo());
         return "{\"valid\": true}";
     }
 
-    @PostMapping(value = "/insert-email", consumes = "application/json")
-    public String insertEmail(@RequestBody JSONObject request) {
-        entityService.insertEmailAddress(request.getInt("patientId"), request.getString("email"));
-        return "{\"valid\": true}";
-    }
-
-    @PostMapping(value = "/insert-address", consumes = "application/json")
-    public String updateAddress(@RequestBody Request request) {
-        entityService.insertAddress(request.getPatientId(), request.getAddress());
+    @PatchMapping(value = "/update-phone", consumes = "application/json")
+    public String updatePhone(@RequestBody String request) {
+        log.info("Request: {}", request);
+//        entityService.savePatient(request.getPatientInfo());
         return "{\"valid\": true}";
     }
 

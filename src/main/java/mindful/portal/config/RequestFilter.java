@@ -34,7 +34,7 @@ public class RequestFilter extends OncePerRequestFilter {
             // Wrap the request
             ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
             String uri = request.getRequestURI();
-            log.info("endpoint: {}", uri);
+            log.info("{} - endpoint: {}", request.getMethod(), uri);
             // Force caching of the body so downstream can read it
             wrappedRequest.getContentAsByteArray();
             // fill out key values from request

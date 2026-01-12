@@ -7,30 +7,35 @@
       <div class="update-section">
         <h2>Personal Information</h2>
         <form @submit.prevent="updatePersonalInfo" class="update-form">
-          <div class="row-4">
+          <div class="row-2">
             <div class="form-group">
               <label>Preferred Name</label>
-              <input v-model="personalInfo.preferredName" type="text" />
+              <input v-model="patientInfo.preferredName" type="text" />
             </div>
             <div class="form-group">
               <label>First Name</label>
-              <input v-model="personalInfo.firstName" type="text" required />
-            </div>
-            <div class="form-group">
-              <label>Middle Name</label>
-              <input v-model="personalInfo.middleName" type="text" />
-            </div>
-            <div class="form-group">
-              <label>Last Name</label>
-              <input v-model="personalInfo.lastName" type="text" required />
+              <input v-model="patientInfo.firstName" type="text" required />
             </div>
           </div>
           <div class="row-2">
             <div class="form-group">
+              <label>Last Name</label>
+              <input v-model="patientInfo.lastName" type="text" required />
+            </div>
+            <div class="form-group">
+              <label>Middle Name</label>
+              <input v-model="patientInfo.middleName" type="text" />
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input v-model="patientInfo.dob" type="date" required />
+            </div>
+            <div class="form-group">
               <label>Pronouns</label>
-              <select v-model="personalInfo.preferredPronouns" :disabled="pronounsLoading">
+              <select v-model="patientInfo.pronouns" :disabled="pronounsLoading">
                 <option value="">Select</option>
-
                 <option
                     v-for="p in pronouns"
                     :key="p.id"
@@ -38,18 +43,16 @@
                   {{ p.name }}
                 </option>
               </select>
-
               <small v-if="pronounsError" class="error">
                 {{ pronounsError }}
               </small>
             </div>
-
-            <!-- Genders -->
+          </div>
+          <div class="row-1">
             <div class="form-group">
-              <label>Genders</label>
-              <select v-model="personalInfo.gender" :disabled="gendersLoading">
+              <label>Gender</label>
+              <select v-model="patientInfo.gender" :disabled="gendersLoading">
                 <option value="">Select</option>
-
                 <option
                     v-for="p in genders"
                     :key="p.id"
@@ -57,11 +60,10 @@
                   {{ p.name }}
                 </option>
               </select>
-              <small v-if="pronounsError" class="error">
-                {{ pronounsError }}
+              <small v-if="gendersError" class="error">
+                {{ gendersError }}
               </small>
             </div>
-
           </div>
           <button type="submit" :disabled="personalLoading || !personalInfoChanged" class="update-btn">
             {{ personalLoading ? 'Updating...' : 'Update Personal Info' }}
@@ -99,6 +101,12 @@
             <div class="form-group">
               <input v-model="editablePhone" type="tel" required />
             </div>
+            <div class="checkboxes">
+              <label>
+                <input v-model="editablePhone.sms" type="checkbox" />
+                Can SMS
+              </label>
+            </div>
             <button type="submit" :disabled="phoneLoading || !phoneChanged" class="update-btn">
               {{ phoneLoading ? 'Updating...' : 'Update Phone' }}
             </button>
@@ -116,7 +124,7 @@
         <form @submit.prevent="updateAddress" class="update-form">
           <div class="form-group">
             <label>Street Address</label>
-            <input v-model="address.street" type="text" required />
+            <input v-model="address.addressLine1" type="text" required />
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -196,44 +204,27 @@ const loadGenders = async () => {
 
 /////////////////////////////////
 // Profile
-const customProfile = ref([])
-const customProfileLoading = ref(false)
-const customProfileError = ref('')
-const loadCustomProfile = async () => {
-  // Implement the logic to load the profile data
-  customProfileLoading.value = true
-  customProfileError.value = ''
-  try {
-    const response = await fetch('/api/get-profile')
-    if (response.ok) {
-      customProfile.value = await response.json()
-    }
-  } catch (err) {
-    customProfileError.value = 'Unable to load profile'
-    console.error(err)
-  } finally {
-    customProfileLoading.value = false
-  }
-}
-
 const profile = ref({
   email: '',
   phone: '',
   address: {
-    street: '',
+    addressLine1: '',
+    addressLine2: '',
     city: '',
     state: '',
     zip: ''
   }
 })
 
-const personalInfo = ref({
+const patientInfo = ref({
+  patientId:'',
   firstName: '',
   middleName: '',
   lastName: '',
   preferredName: '',
-  preferredPronouns: '',
-  gender: ''
+  pronouns: '',
+  gender: '',
+  dob: ''
 })
 
 const originalPersonalInfo = ref({})
@@ -241,7 +232,7 @@ const originalPersonalInfo = ref({})
 const editablePhone = ref('')
 const editableEmail = ref('')
 const address = ref({
-  street: '',
+  addressLine1: '',
   city: '',
   state: '',
   zip: ''
@@ -262,47 +253,103 @@ const emailMessageClass = ref('')
 const addressMessageClass = ref('')
 const personalMessageClass = ref('')
 
-const phoneChanged = computed(() => editablePhone.value !== profile.value.phone)
+const phoneChanged = computed(() => {
+  return editablePhone.value !== profile.value.phone
+})
 const emailChanged = computed(() => editableEmail.value !== profile.value.email)
 
 const addressChanged = computed(() => {
   const orig = profile.value.address
   const edit = address.value
-  return orig.street !== edit.street || orig.city !== edit.city || orig.state !== edit.state || orig.zip !== edit.zip
+  return orig.addressLine1 !== edit.addressLine1 || orig.city !== edit.city || orig.state !== edit.state || orig.zip !== edit.zip
 })
+
 const personalInfoChanged = computed(() => {
   const orig = originalPersonalInfo.value
-  const edit = personalInfo.value
+  const edit = patientInfo.value
   return orig.firstName !== edit.firstName || orig.middleName !== edit.middleName ||
       orig.lastName !== edit.lastName || orig.preferredName !== edit.preferredName ||
-      orig.preferredPronouns !== edit.preferredPronouns || orig.gender !== edit.gender
+      orig.pronouns !== edit.pronouns || orig.gender !== edit.gender ||
+      orig.dob !== edit.dob
 })
+
+const loadPatientData = async () => {
+  try {
+    const patientId = new URLSearchParams(window.location.search).get('id');
+    const response = await fetch(`/api/get-patient?id=${patientId}`);
+    if (response.ok) {
+      const data = await response.json();
+
+      // Convert dob array to JS Date
+      let dobString = '';
+      if (Array.isArray(data.patientInfo.dob)) {
+        const [year, month, day] = data.patientInfo.dob;
+        const dateObj = new Date(year, month - 1, day);
+
+        // Convert to YYYY-MM-DD string for input[type="date"]
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        dobString = `${yyyy}-${mm}-${dd}`;
+      }
+
+      // Populate personal info
+      patientInfo.value = {
+        patientId: data.patientInfo.patientId || '',
+        firstName: data.patientInfo.firstName || '',
+        middleName: data.patientInfo.middleName || '',
+        lastName: data.patientInfo.lastName || '',
+        preferredName: data.patientInfo.preferredName || '',
+        pronouns: data.patientInfo.pronouns || '',
+        gender: data.patientInfo.gender || '',
+        dob: dobString
+      };
+      originalPersonalInfo.value = { ...patientInfo.value };
+
+      // Populate email
+      editableEmail.value = data.email?.email || '';
+
+      // Populate phone numbers (optional: pick primary or first)
+      editablePhone.value = data.phone?.[0]?.phoneNumber || '';
+
+      // Populate address (take first if exists)
+      const addr = data.address?.[0] || {};
+      address.value = {
+        addressLine1: addr.addressLine1 || '',
+        addressLine2: addr.addressLine2 || '',
+        city: addr.city || '',
+        state: addr.state || '',
+        zip: addr.zip || ''
+      };
+
+      // Update profile reference (raw objects)
+      profile.value = {
+        email: data.email || {},
+        phone: data.phone || [],
+        address: data.address || []
+      };
+    }
+  } catch (err) {
+    console.error('Failed to load patient data:', err);
+  }
+};
 
 onMounted(() => {
   loadPronouns()
   loadGenders()
+  // data on patient
+  loadPatientData()
 
-  profile.value = {
-    email: 'patient@example.com',
-    phone: '(555) 123-4567',
-    address: {
-      street: '123 Main St',
-      city: 'New York',
-      state: 'NY',
-      zip: '10001'
-    }
+  patientInfo.value = {
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    preferredName: '',
+    pronouns: '',
+    gender: ''
   }
 
-  personalInfo.value = {
-    firstName: 'John',
-    middleName: 'Michael',
-    lastName: 'Doe',
-    preferredName: 'Johnny',
-    // preferredPronouns: 'he/him',
-    gender: 'Male'
-  }
-
-  originalPersonalInfo.value = { ...personalInfo.value }
+  originalPersonalInfo.value = { ...patientInfo.value }
   editablePhone.value = profile.value.phone
   editableEmail.value = profile.value.email
   address.value = { ...profile.value.address }
@@ -313,19 +360,21 @@ const updatePersonalInfo = async () => {
   personalMessage.value = ''
 
   try {
-    const response = await fetch('/api/insert/personal-info', {
+    const patientId = new URLSearchParams(window.location.search).get('id');
+
+    const response = await fetch('/api/update-personal-info', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        patientId: 1,
-        personalInfo: personalInfo.value,
+        patientId: patientId,
+        patientInfo: patientInfo.value,
       }),
     })
 
     if (response.ok) {
-      originalPersonalInfo.value = { ...personalInfo.value }
+      originalPersonalInfo.value = { ...patientInfo.value }
       personalMessage.value = 'Personal information updated successfully!'
       personalMessageClass.value = 'success'
     } else {
@@ -345,8 +394,8 @@ const updatePhone = async () => {
   phoneMessage.value = ''
 
   try {
-    const response = await fetch('/api/insert/phone', {
-      method: 'POST',
+    const response = await fetch('/api/update-phone', {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -437,91 +486,6 @@ const updateAddress = async () => {
 }
 
 </script>
-
-<style scoped>
-
-h1 {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.form-section h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 0.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 1rem;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 1rem;
-}
-
-.update-btn {
-  width: 100%;
-  padding: 0.75rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-bottom: 1rem;
-}
-
-.update-btn:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-.update-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-
-.error {
-  color: #dc2626;
-  text-align: center;
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: #fef2f2;
-  border-radius: 4px;
-}
-</style>
 
 <style scoped>
 h1 {
@@ -627,5 +591,17 @@ h1 {
   padding: 0.5rem;
   background: #fef2f2;
   border-radius: 4px;
+}
+
+.row-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 </style>

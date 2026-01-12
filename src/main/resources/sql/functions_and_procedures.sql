@@ -20,7 +20,7 @@ BEGIN
         RAISE NOTICE 'Row(s) updated: %', row_count;
     EXCEPTION
         WHEN OTHERS THEN
-            RAISE NOTICE 'An error while expiring address for patient: %', p_patient_id;
+            RAISE NOTICE 'An error while expiring address for patientInfo: %', p_patient_id;
     END;
 
     BEGIN
@@ -28,7 +28,7 @@ BEGIN
         values (p_patient_id, p_street1, p_street2, p_city, p_state, p_zip, p_type);
     EXCEPTION
         WHEN OTHERS THEN
-            RAISE NOTICE 'An error while inserting address for patient: %', p_patient_id;
+            RAISE NOTICE 'An error while inserting address for patientInfo: %', p_patient_id;
     END;
 END;
 $$;
@@ -52,14 +52,14 @@ BEGIN
         RAISE NOTICE 'Row(s) updated: %', row_count;
     EXCEPTION
         WHEN OTHERS THEN
-            RAISE NOTICE 'An error while expiring email for patient: %', p_patient_id;
+            RAISE NOTICE 'An error while expiring email for patientInfo: %', p_patient_id;
     END;
 
     BEGIN
         insert into core_bio.email (patient_id, email) values (p_patient_id, p_email);
     EXCEPTION
         WHEN OTHERS THEN
-            RAISE NOTICE 'An error while inserting email for patient: %', p_patient_id;
+            RAISE NOTICE 'An error while inserting email for patientInfo: %', p_patient_id;
     END;
 END;
 $$;

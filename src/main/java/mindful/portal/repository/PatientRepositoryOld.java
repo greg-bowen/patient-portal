@@ -1,7 +1,7 @@
 package mindful.portal.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import mindful.portal.model.Patient;
+import mindful.portal.model.PatientInfo;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
@@ -12,13 +12,13 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class PatientRepository {
+public class PatientRepositoryOld {
     private final JdbcClient jdbcClient;
-    public PatientRepository(JdbcClient jdbcClient) {
+    public PatientRepositoryOld(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 
-    public Patient getPatientInfo(int patientId) {
+    public PatientInfo getPatientInfo(int patientId) {
         String sql = "select p.*, e.email " +
                 "from core_bio.patients p, core_bio.emails e " +
                 "where p.patient_id = e.patient_id " +
@@ -27,9 +27,9 @@ public class PatientRepository {
                 "order by e.seq_id desc " +
                 "limit 1";
         try {
-            Patient result = jdbcClient.sql(sql)
+            PatientInfo result = jdbcClient.sql(sql)
                     .param("patientId", patientId)
-                    .query(Patient.class)
+                    .query(PatientInfo.class)
                     .single();
             log.info("Patient found: {}", result);
             return result;

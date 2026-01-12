@@ -1,9 +1,9 @@
 package mindful.portal.services;
 
 
-import mindful.portal.model.PasswordRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mindful.portal.model.PasswordRequest;
 import org.json.JSONObject;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

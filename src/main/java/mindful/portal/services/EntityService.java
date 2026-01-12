@@ -1,8 +1,15 @@
 package mindful.portal.services;
 
-import mindful.portal.model.*;
-import mindful.portal.repository.*;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mindful.portal.interfaces.AddressRepository;
+import mindful.portal.interfaces.EmailRepository;
+import mindful.portal.interfaces.PatientInfoRepository;
+import mindful.portal.interfaces.PhoneRepository;
+import mindful.portal.model.*;
+import mindful.portal.repository.PatientRepositoryOld;
+import mindful.portal.repository.PhoneRepositoryOld;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,54 +17,50 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EntityService {
 
-    private final PatientRepository patientRepository;
-    private final AddressRepository addressRepository;
-    private final EmailRepository emailRepository;
-    private final PhoneRepository phoneRepository;
-    private final TransactionRepository transactionRepository;
+    private final PatientInfoRepository patientInfoRepository;
+    private final EmailRepository emailRepo;
+    private final AddressRepository addressRepo;
+    private final PhoneRepository phoneRepo;
 
-    public EntityService(PatientRepository patientRepository, AddressRepository addressRepository, EmailRepository emailRepository, PhoneRepository phoneRepository, TransactionRepository transactionRepository) {
-        this.patientRepository = patientRepository;
-        this.addressRepository = addressRepository;
-        this.emailRepository = emailRepository;
-        this.phoneRepository = phoneRepository;
-        this.transactionRepository = transactionRepository;
-    }
-
-    public void insertPhone(int patientId, Phone phone) {
-        phoneRepository.insertPhone(patientId, phone);
-    }
-
-    public void insertEmailAddress(int patientId, String email) {
-        emailRepository.insertEmailAddress(patientId, email);
-    }
-
-    public void insertAddress(int patientId, Address address) {
-        addressRepository.insertAddress(patientId, address);
-    }
+    private final PatientRepositoryOld getters;
+    private final PhoneRepositoryOld phoneRepositoryOld;
 
     public Patient getPatient(int patientId) {
-        Patient patient = patientRepository.getPatientInfo(patientId);
-        patient.setAddress(addressRepository.getAddresses(patientId));
-        patient.setPhone(phoneRepository.getPhone(patientId));
+
+        PatientInfo info = patientInfoRepository.findByPatientId(patientId)
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
+
+        Email email = emailRepo.findByPatientId(patientId).orElse(null);
+
+        List<Address> addresses = addressRepo.findByPatientId(patientId).orElse(null);
+        List<Phone> phones = phoneRepo.findByPatientId(patientId).orElse(null);;
+
+        Patient patient = new Patient();
+        patient.setPatientInfo(info);
+        patient.setEmail(email);
+        patient.setAddress(addresses);
+        patient.setPhone(phones);
+
         return patient;
     }
 
-    public Transactions getTransactions(Request request) {
-        return new Transactions(transactionRepository.getTransactions(request.getPatientId()));
+    public void savePatient(PatientInfo patient) {
+        patientInfoRepository.save(patient);
     }
 
+
     public List<Map<String, Object>> getPronouns() {
-        return patientRepository.getPronouns();
+        return getters.getPronouns();
     }
 
     public List<Map<String, Object>> getGenders() {
-        return patientRepository.getGenders();
+        return getters.getGenders();
     }
 
     public List<Map<String, Object>> getPhoneTypes() {
-        return phoneRepository.getPhoneTypes();
+        return phoneRepositoryOld.getPhoneTypes();
     }
 }

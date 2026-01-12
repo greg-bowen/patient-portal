@@ -2,6 +2,7 @@ package mindful.portal.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -20,7 +21,8 @@ public class ObjectMapperConfig {
         return new Jackson2ObjectMapperBuilder()
                 .featuresToEnable(ACCEPT_CASE_INSENSITIVE_PROPERTIES, ACCEPT_CASE_INSENSITIVE_VALUES)
                 .featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .build();
+                .build()
+                .registerModule(new JavaTimeModule());
     }
 
 }
