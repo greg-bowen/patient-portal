@@ -5,8 +5,8 @@ values ('Greg', 'Gregory', 'John', 'Bowen', '1991-05-04', 'F'),
 
 insert into core_bio.phone(patient_id, phone_number, type)
 values (1, '800-600-6014', 'H'),
-       (1, '000000000002', 'M'),
-       (2, '000000000003', 'W');
+       (1, '123-456-7890', 'M'),
+       (2, '2056448258', 'W');
 
 insert into core_bio.addresses(patient_id, address_line_1, city, state, zip, type)
 values (1, '123 1rst St', 'New York', 'NY', '10001', 'H'),

@@ -138,37 +138,23 @@ drop FUNCTION if exists core_bio.phone_biu;
 CREATE or replace FUNCTION core_bio.phone_biu()
     RETURNS trigger AS $$
 BEGIN
-    DECLARE
-        row_count numeric := 0;
-        v_phone_number core_bio.phone.phone_number%type;
     BEGIN
         update core_bio.phone
         set expiration_date = now()
         where patient_id = NEW.patient_id
 --           and type = NEW.type
           and expiration_date is null;
-        -- get count of updated
-        GET DIAGNOSTICS row_count = ROW_COUNT;
-        -- display count of updated
-        RAISE NOTICE 'Row(s) updated: %', row_count;
-
-        if TG_OP = 'INSERT' then
-            -- Format phone number - remove non-numerics
-            v_phone_number := regexp_replace(NEW.phone_number, '[^0-9]+', '', 'g');
-            if length(v_phone_number) =  10 then
-                v_phone_number := substr(v_phone_number,0,4) || '-' || substr(v_phone_number,4,3) || '-' || substr(v_phone_number,7);
-            end if;
-            NEW.phone_number := v_phone_number;
-            NEW.seq_id := (
-                select coalesce(max(seq_id),0) + 1
-                from core_bio.phone
-                where patient_id = NEW.patient_id
-            );
-        END IF;
+        -- Format phone number - remove non-numerics
+        NEW.phone_number := regexp_replace(NEW.phone_number, '[^0-9]+', '', 'g');
+        NEW.seq_id := (
+            select coalesce(max(seq_id),0) + 1
+            from core_bio.phone
+            where patient_id = NEW.patient_id
+        );
         return NEW;
     EXCEPTION
         WHEN OTHERS THEN
-            RAISE NOTICE 'An error while inserting phone number: %', v_phone_number;
+            RAISE NOTICE 'An error while inserting phone number: %', NEW.phone_number ;
     END;
 END;
 $$ LANGUAGE plpgsql;
@@ -183,12 +169,12 @@ EXECUTE PROCEDURE core_bio.phone_biu();
 -- Email
 drop table if exists core_bio.emails;
 CREATE TABLE if not exists core_bio.emails (id  BIGSERIAL unique,
-                                           patient_id BIGINT REFERENCES core_bio.patients(patient_id),
-                                           seq_id int,
-                                           email_address VARCHAR(120),
-                                           effective_date timestamp without time zone not null,
-                                           expiration_date timestamp without time zone,
-                                           primary key (patient_id, seq_id)
+                                            patient_id BIGINT REFERENCES core_bio.patients(patient_id),
+                                            seq_id int,
+                                            email_address VARCHAR(120),
+                                            effective_date timestamp without time zone not null,
+                                            expiration_date timestamp without time zone,
+                                            primary key (patient_id, seq_id)
 );
 
 CREATE OR REPLACE FUNCTION core_bio.emails_biu()
@@ -219,7 +205,7 @@ EXECUTE PROCEDURE core_bio.emails_biu();
 -- Address type
 drop table if exists core_bio.address_types;
 create table if not exists core_bio.address_types (code varchar(4) primary key,
-                                                  description varchar(20)
+                                                   description varchar(20)
 );
 
 insert into core_bio.address_types (code, description)
@@ -232,21 +218,21 @@ values ('H', 'Home'),
 -- Address
 drop table if exists core_bio.addresses;
 CREATE TABLE if not exists core_bio.addresses (id BIGSERIAL,
-                                             patient_id BIGINT REFERENCES core_bio.patients(patient_id),
-                                             seq_id int,
-                                             address_line_1 VARCHAR(255) not null,
-                                             address_line_2 VARCHAR(255),
-                                             city VARCHAR(255) not null ,
-                                             state VARCHAR(255) not null ,
-                                             zip VARCHAR(255) not null ,
-                                             type char references core_bio.address_types(code),
-                                             effective_date timestamp without time zone not null,
-                                             expiration_date timestamp without time zone,
-                                             created_by varchar(20) not null,
-                                             created_date timestamp without time zone not null,
-                                             updated_by varchar(20) not null,
-                                             updated_date timestamp without time zone not null,
-                                             primary key (patient_id, seq_id)
+                                               patient_id BIGINT REFERENCES core_bio.patients(patient_id),
+                                               seq_id int,
+                                               address_line_1 VARCHAR(255) not null,
+                                               address_line_2 VARCHAR(255),
+                                               city VARCHAR(255) not null ,
+                                               state VARCHAR(255) not null ,
+                                               zip VARCHAR(255) not null ,
+                                               type char references core_bio.address_types(code),
+                                               effective_date timestamp without time zone not null,
+                                               expiration_date timestamp without time zone,
+                                               created_by varchar(20) not null,
+                                               created_date timestamp without time zone not null,
+                                               updated_by varchar(20) not null,
+                                               updated_date timestamp without time zone not null,
+                                               primary key (patient_id, seq_id)
 );
 
 CREATE OR REPLACE FUNCTION core_bio.addresses_biu()
