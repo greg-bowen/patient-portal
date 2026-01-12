@@ -1,1 +1,13 @@
 src/main/resources/*-local.*
+target/
+.git/
+.github/
+*.md
+.gitignore
+.dockerignore
+node_modules/
+src/frontend/node_modules/
+src/frontend/dist/
+*.log
+.env
+.env.*
