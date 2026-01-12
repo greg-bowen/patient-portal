@@ -14,7 +14,7 @@
                 ],
                 "options": {
                     "splunk-insecureskipverify": "true",
-                    "splunk-source": "patient-portal-dev-service",
+                    "splunk-source": "patient-portal-backend-dev-service",
                     "splunk-sourcetype": "mc-dev-cluster",
                     "splunk-format": "raw"
                 }
