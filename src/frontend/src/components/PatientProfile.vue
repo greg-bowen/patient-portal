@@ -160,7 +160,6 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import PatientLayout from './PatientLayout.vue'
-import { mask } from 'vue-the-mask'
 
 ///////////////////////////////////
 // Pronouns
@@ -300,7 +299,7 @@ const addressMessageClass = ref('')
 const personalMessageClass = ref('')
 
 const phoneChanged = computed(() =>
-    editablePhone.value.phoneNumber  !== profile.value.phone.phoneNumber
+    stripNonNumeric(editablePhone.value.phoneNumber) !== stripNonNumeric(profile.value.phone.phoneNumber)
     || editablePhone.value.sms  !== profile.value.phone.sms)
 const emailChanged = computed(() => editableEmail.value.emailAddress !== profile.value.email.emailAddress)
 
@@ -365,7 +364,7 @@ const loadPatientData = async () => {
 
       // Populate phone numbers (optional: pick primary or first)
       editablePhone.value.patientId = data.patientInfo.patientId || '';
-      editablePhone.value.phoneNumber = data.phone?.phoneNumber || '';
+      editablePhone.value.phoneNumber = stripNonNumeric(data.phone?.phoneNumber) || '';
       editablePhone.value.sms = data.phone?.sms || false;
 
       // Populate address (take first if exists)
@@ -407,7 +406,7 @@ onMounted(() => {
   }
 
   originalPersonalInfo.value = { ...patientInfo.value }
-  editablePhone.value.phoneNumber = profile.value.phone.phoneNumber
+  editablePhone.value.phoneNumber = stripNonNumeric(profile.value.phone.phoneNumber)
   editableEmail.value.emailAddress = profile.value.email.emailAddress
   editableAddress.value = { ...profile.value.address }
 })
@@ -444,9 +443,15 @@ const updatePersonalInfo = async () => {
   }
 }
 
+const stripNonNumeric = (str) => str.replace(/\D+/g, '')
+
 const updatePhone = async () => {
   phoneLoading.value = true
   phoneMessage.value = ''
+  const cleanedPhone = {
+    ...editablePhone.value,
+    phoneNumber: stripNonNumeric(editablePhone.value.phoneNumber),
+  }
 
   try {
     const response = await fetch('/api/update-phone', {
@@ -455,7 +460,7 @@ const updatePhone = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        phone: editablePhone.value,
+        phone: cleanedPhone,
       }),
     })
 
@@ -659,8 +664,3 @@ h1 {
   gap: 1rem;
 }
 </style>
-<script>
-export default {
-  directives: { mask }
-}
-</script>
