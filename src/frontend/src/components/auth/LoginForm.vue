@@ -38,7 +38,7 @@
         
         <div class="signup-section">
           <span>New to Mindful Care? </span>
-          <a href="http://mindful.care/pre-registration" class="signup-link" target="_blank">
+          <a href="https://mindful.care/pre-registration" class="signup-link" target="_blank">
             Create an account
           </a>
         </div>
@@ -89,6 +89,12 @@ const validateLogin = async () => {
     if (response.ok) {
       if (data.valid) {
         router.push('/home')
+        // await router.push({
+        //   name: 'home',
+        //   query: {
+        //     email: email.value // or whatever variable holds the email
+        //   }
+        // })
       } else {
         message.value = data.message || 'Login failed'
         messageClass.value = 'error'
@@ -227,24 +233,6 @@ h1 {
 
 .signup-link:hover {
   text-decoration: underline;
-}
-
-.success {
-  color: #059669;
-  text-align: center;
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: #ecfdf5;
-  border-radius: 4px;
-}
-
-.error {
-  color: #dc2626;
-  text-align: center;
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: #fef2f2;
-  border-radius: 4px;
 }
 
 .reset-password {

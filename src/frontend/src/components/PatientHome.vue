@@ -10,15 +10,21 @@
       </div>
 
       <div class="card">
+        <h3>Billing</h3>
+        <p>View statements and payment history</p>
+        <button class="card-btn">View Billing</button>
+      </div>
+
+      <div class="card">
         <h3>Appointments</h3>
         <p>View and manage your upcoming appointments</p>
         <button class="card-btn">View Appointments</button>
       </div>
       
       <div class="card">
-        <h3>Messages</h3>
-        <p>Communicate with your care team</p>
-        <button class="card-btn">View Messages</button>
+        <h3>Tasks</h3>
+        <p>View tasks to complete prior to your appointment</p>
+        <button class="card-btn">View Tasks</button>
       </div>
       
       <div class="card">
@@ -27,11 +33,6 @@
         <button class="card-btn">View Records</button>
       </div>
 
-      <div class="card">
-        <h3>Billing</h3>
-        <p>View statements and payment history</p>
-        <button class="card-btn">View Billing</button>
-      </div>
     </div>
   </PatientLayout>
 </template>

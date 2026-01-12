@@ -3,11 +3,9 @@ package mindful.portal.services;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mindful.portal.interfaces.AddressRepository;
-import mindful.portal.interfaces.EmailRepository;
-import mindful.portal.interfaces.PatientInfoRepository;
-import mindful.portal.interfaces.PhoneRepository;
+import mindful.portal.interfaces.*;
 import mindful.portal.model.*;
+import mindful.portal.model.legacy.User;
 import mindful.portal.repository.PatientRepositoryOld;
 import mindful.portal.repository.PhoneRepositoryOld;
 import org.springframework.stereotype.Service;
@@ -24,6 +22,7 @@ public class EntityService {
     private final EmailRepository emailRepo;
     private final AddressRepository addressRepo;
     private final PhoneRepository phoneRepo;
+    private final UserRepository userRepository;
 
     private final PatientRepositoryOld getters;
     private final PhoneRepositoryOld phoneRepositoryOld;
@@ -36,6 +35,10 @@ public class EntityService {
         Email email = emailRepo.findByPatientIdAndExpirationDateIsNull(patientId).orElse(null);
         Address address = addressRepo.findByPatientIdAndExpirationDateIsNull(patientId).orElse(null);
         Phone phone = phoneRepo.findByPatientIdAndExpirationDateIsNull(patientId).orElse(null);
+
+
+        assert email != null;
+        User user = userRepository.findByEmail(email.getEmailAddress()).orElse(null);
 
         Patient patient = new Patient();
         patient.setPatientInfo(info);
@@ -73,4 +76,6 @@ public class EntityService {
     public void saveEmail(Email email) {
         emailRepo.save(email);
     }
+
+
 }

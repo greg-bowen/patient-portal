@@ -99,7 +99,7 @@
           <h2>Phone Number</h2>
           <form @submit.prevent="updatePhone" class="update-form">
             <div class="form-group">
-              <input v-model="editablePhone.phoneNumber" type="tel" required />
+              <input v-model="editablePhone.phoneNumber" v-mask="'(###) ###-####'" type="tel" required />
             </div>
             <div class="checkboxes">
               <label>
@@ -160,6 +160,7 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import PatientLayout from './PatientLayout.vue'
+import { mask } from 'vue-the-mask'
 
 ///////////////////////////////////
 // Pronouns
@@ -658,3 +659,8 @@ h1 {
   gap: 1rem;
 }
 </style>
+<script>
+export default {
+  directives: { mask }
+}
+</script>
